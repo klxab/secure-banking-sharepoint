@@ -1,24 +1,30 @@
 from logging.config import fileConfig
-from alembic import context
-from src.database.base import Base
-import src.models
-from src.database.connection import DATABASE_URL, create_database_engine
 
-# Alembic configuration
+from alembic import context
+
+from src.database.base import Base
+from src.database.connection import (
+    create_migration_database_engine,
+    get_migration_database_url,
+)
+import src.models
+
+
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Metadata used by Alembic to detect database schema changes.
+
 target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
     """Generate migration SQL without connecting to the database."""
 
-    # Remove credentials and host details from the offline configuration.
-    safe_url = DATABASE_URL.set(
+    migration_url = get_migration_database_url()
+
+    safe_url = migration_url.set(
         username=None,
         password=None,
         host=None,
@@ -40,9 +46,9 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations using the project's existing database connection."""
+    """Run migrations using the dedicated migration account."""
 
-    engine = create_database_engine()
+    engine = create_migration_database_engine()
 
     try:
         with engine.connect() as connection:

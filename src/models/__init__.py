@@ -4,6 +4,7 @@ from src.models.role_permission import RolePermission
 from src.models.user import User
 from src.models.user_role import UserRole
 from src.models.user_session import UserSession
+from src.models.audit_log import AuditLog
 
 __all__ = [
     "Permission",
@@ -12,4 +13,5 @@ __all__ = [
     "User",
     "UserRole",
     "UserSession",
+    "AuditLog",
 ]
