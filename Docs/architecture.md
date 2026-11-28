@@ -67,7 +67,7 @@ The current implementation does not yet provide complete resource-ownership and 
 
 The available Microsoft account, SharePoint capabilities, Microsoft Graph permissions, Azure access and licensing must be verified before selecting the final integration method.
 
-The local application currently uses PostgreSQL, with Docker Compose available as an optional deployment method. Runtime application credentials and dedicated migration credentials are configured separately.
+The local application uses a locally installed PostgreSQL server. Runtime application credentials and dedicated migration credentials are configured separately.
 
 ## 6. Research contribution
 
