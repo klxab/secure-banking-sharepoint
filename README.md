@@ -148,7 +148,6 @@ The diagram shows the persisted relationships. `user_roles.assigned_by` is an ad
 - Alembic
 - Argon2id via `argon2-cffi`
 - Pytest
-- Docker Compose as an optional PostgreSQL development deployment
 
 Dependency versions are pinned in [requirements.txt](requirements.txt).
 
@@ -174,7 +173,6 @@ Dependency versions are pinned in [requirements.txt](requirements.txt).
 │   ├── models/
 │   └── security/
 ├── tests/
-├── compose.yaml
 ├── requirements.txt
 └── README.md
 ```
@@ -209,13 +207,11 @@ The application connection uses the `POSTGRES_*` settings. Alembic is configured
 
 The connection configuration is implemented in [src/database/connection.py](src/database/connection.py), and Alembic obtains its separate connection through [alembic/env.py](alembic/env.py).
 
-### 3. Start PostgreSQL
+### 3. Start the local PostgreSQL service
 
-Use an existing local PostgreSQL instance or the optional Docker Compose service. The Compose file binds PostgreSQL to localhost port `5433` and requires the database variables in `.env`.
+Start your locally installed PostgreSQL 17 service and make sure it is listening on the host and port configured in `.env`. The current development configuration uses `127.0.0.1:5433`.
 
-```powershell
-docker compose up -d db
-```
+Create the `banking_dev` database and configure the application runtime account and the separate migration account with the required database privileges before continuing.
 
 ### 4. Apply migrations
 
