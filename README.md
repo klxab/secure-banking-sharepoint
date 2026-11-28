@@ -231,15 +231,32 @@ alembic upgrade head
 python scripts/seed_rbac.py
 ```
 
-Create the initial administrator using the interactive bootstrap script:
+### 6. Register and bootstrap the initial administrator
+
+The bootstrap script expects an existing, active user with this designated identity:
+
+- Username: `platform.admin`
+- Email: `platform.admin@securebank.test`
+
+Start the API temporarily:
+
+```powershell
+uvicorn src.api.main:app --reload
+```
+
+Open http://127.0.0.1:8000/docs and use `POST /auth/register` to register that username and email. Use a temporary password that you have not used elsewhere. Stop the API after the account is registered.
+
+Then run:
 
 ```powershell
 python scripts/bootstrap_admin.py
 ```
 
-Provide credentials interactively when prompted. Do not put administrator passwords in shell history, source code, screenshots or Git.
+The script prompts for a new password (at least 12 characters), replaces the temporary password with an Argon2id hash and assigns the `system_admin` role in one database transaction. It refuses to run if an administrator already exists.
 
-### 6. Run the API
+Do not put administrator passwords in shell history, source code, screenshots or Git.
+
+### 7. Run the API
 
 ```powershell
 uvicorn src.api.main:app --reload
@@ -251,7 +268,7 @@ Useful local endpoints:
 - Database health: http://127.0.0.1:8000/health/database
 - Interactive API documentation: http://127.0.0.1:8000/docs
 
-### 7. Run tests
+### 8. Run tests
 
 Use the dedicated test database configured for the test environment. The test suite is designed to reject unsafe use of the development database.
 
