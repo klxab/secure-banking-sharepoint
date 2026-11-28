@@ -10,7 +10,6 @@ This document distinguishes the **implemented persistence layer** from the **pla
 
 - Database: PostgreSQL
 - Current recorded local server: PostgreSQL 17.12
-- Optional Docker image: `postgres:17.11-alpine`
 - Local development database: `banking_dev`
 - Application database user: `banking_app`
 - Local host port: `5433`
@@ -18,7 +17,7 @@ This document distinguishes the **implemented persistence layer** from the **pla
 - Driver: Psycopg 3
 - Schema migrations: Alembic
 
-The current development setup uses a local PostgreSQL server. Docker Compose is retained as an optional local database deployment; it is not the only supported setup.
+The current development setup uses a locally installed PostgreSQL server. The application connects to it through the host and port configured in the local `.env` file.
 
 ## 3. Implemented schema
 
