@@ -2,24 +2,39 @@
 
 ## 1. Purpose
 
-The database supports a secure banking information system prototype
-designed for research into role-based access control, data
-tokenization, security auditing, and access anomaly detection.
+The database supports a security-focused banking information system prototype for research into role-based access control, data tokenization, security auditing and access anomaly detection. Development and evaluation use synthetic data only.
 
-The system uses synthetic data exclusively.
+This document distinguishes the **implemented persistence layer** from the **planned banking-domain design**.
 
-## 2. Database Technology
+## 2. Database technology
 
 - Database: PostgreSQL
-- Version: 17.11
-- Development deployment: Docker
-- Database name: banking_dev
-- Database application user: banking_app
-- Local host port: 5433
+- Current recorded local server: PostgreSQL 17.12
+- Optional Docker image: `postgres:17.11-alpine`
+- Local development database: `banking_dev`
+- Application database user: `banking_app`
+- Local host port: `5433`
 - ORM: SQLAlchemy
-- Database driver: Psycopg 3
+- Driver: Psycopg 3
+- Schema migrations: Alembic
 
-## 3. Architectural Principles
+The current development setup uses a local PostgreSQL server. Docker Compose is retained as an optional local database deployment; it is not the only supported setup.
+
+## 3. Implemented schema
+
+The current application schema contains seven tables:
+
+- `users`
+- `roles`
+- `permissions`
+- `user_roles`
+- `role_permissions`
+- `user_sessions`
+- `audit_logs`
+
+These tables support user identity, role/permission assignment, authenticated sessions and structured security audit events. The exact columns and relationships are documented in [iam-schema.md](iam-schema.md), which includes the current ER diagram.
+
+## 4. Database principles
 
 - Least privilege
 - Deny-by-default authorization
@@ -28,134 +43,65 @@ The system uses synthetic data exclusively.
 - Data minimization
 - Secure handling of sensitive information
 - Auditability
-- Database integrity
+- Referential integrity
 - Reproducible testing
 - Synthetic data only
 
-## 4. Planned Database Entities
+## 5. Planned banking-domain entities
 
-### Identity and Access Management
+The following entities are design targets and **are not implemented as database tables yet**:
 
-- users
-- roles
-- permissions
-- user_roles
-- role_permissions
-- sessions
+- `customers`
+- `accounts`
+- `banking_transactions`
+- `ledger_entries`
 
-### Banking Domain
+The future banking domain will use pseudonymous identifiers where appropriate. Account and transaction operations will require explicit authorization checks, ownership validation and transactional integrity.
 
-- customers
-- accounts
-- banking_transactions
-- ledger_entries
-
-### Security
-
-- token_vault
-- security_events
-
-## 5. Authorization Model
-
-The system uses Role-Based Access Control (RBAC).
-
-Permissions are assigned to roles, and roles are assigned to users.
-
-Authorization will additionally consider contextual factors such as
-resource ownership, resource sensitivity, requested action, and
-purpose of access where applicable.
-
-The authorization policy follows a deny-by-default principle.
-
-Initial roles:
-
-- system_admin
-- security_officer
-- bank_analyst
-- customer_support
-- customer
-- auditor
-
-Administrative privileges do not automatically grant unrestricted
-access to sensitive banking data.
-
-## 6. Banking Data Design
-
-Customers and accounts will use pseudonymous identifiers.
-
-Accounts will not expose sensitive identifiers directly to ordinary
-application components.
-
-Financial transactions will use a ledger-based design with debit
-and credit entries.
-
-Financial integrity requirements will include:
-
-- Positive transaction amounts
-- Valid currency codes
+Financial integrity requirements to address include:
+- Positive transaction amounts and valid currency codes
 - Referential integrity
-- Transactional processing
-- Balanced ledger operations
+- Atomic transaction processing
+- Balanced debit and credit ledger entries
 - Protection against unauthorized modification
 
-## 7. Tokenization Design
+## 6. Planned tokenization design
 
-Sensitive identifiers will be replaced with opaque tokens.
+A future `token_vault` component will maintain protected mappings between opaque tokens and sensitive values. Tokenization/de-tokenization operations will be restricted to a dedicated service and audited. Sensitive values should be encrypted using authenticated encryption; keys must be managed outside the database and Git. Key versioning and rotation will be addressed in the implementation design.
 
-The token vault will store protected mappings between tokens and
-sensitive values.
+No token vault or tokenization table is currently implemented.
 
-Sensitive values will be encrypted using authenticated encryption.
+## 7. Security event logging
 
-Encryption keys will be stored outside the database and outside Git.
+The implemented `audit_logs` table records fields including actor, action, outcome, target, request metadata, JSON details and event timestamp. It is used for security-relevant authentication and authorization events.
 
-The design will support key versioning and future key rotation.
+Future event coverage will be extended as banking data access, tokenization and anomaly detection components are added. Logs must not contain passwords, session secrets, encryption keys or raw sensitive banking identifiers.
 
-Vault access will be restricted and audited.
+The current audit log is structured but is not yet tamper-proof. Database-level append-only controls and independent integrity verification remain future hardening work.
 
-## 8. Security Event Logging
+## 8. Anomaly detection research
 
-Security events will record relevant events such as:
+The research will investigate sensitivity-aware, role-conditioned access anomaly detection.
 
-- Authentication attempts
-- Authorization decisions
-- Sensitive data access
-- Denied access
-- Role and permission changes
-- Tokenization and de-tokenization operations
-- Security-related system activity
-
-Logs must not contain passwords, encryption keys, or raw sensitive
-banking identifiers.
-
-Security events will support the anomaly detection research.
-
-## 9. Anomaly Detection Research
-
-The research will investigate role-conditioned and sensitivity-aware
-access anomaly detection.
-
-The planned comparison includes:
-
+Planned comparison:
 - Rule-based detection
 - Isolation Forest
 - Proposed role-conditioned and sensitivity-aware detection
 
-Experiments will use synthetic datasets and controlled scenarios.
+Experiments will use synthetic datasets and controlled access scenarios. Planned evaluation metrics include precision, recall, F1-score, false-positive rate and detection latency.
 
-Evaluation metrics will include:
+No anomaly detection pipeline or evaluation results are implemented yet.
 
-- Precision
-- Recall
-- F1-score
-- False-positive rate
-- Detection latency
+## 9. Implementation status summary
 
-## 10. Implementation Status
+| Area | Status |
+|---|---|
+| IAM tables and relationships | Implemented |
+| Session persistence | Implemented |
+| Structured audit logs | Implemented |
+| Banking customers and accounts | Planned |
+| Transactions and ledger | Planned |
+| Token vault and tokenization | Planned |
+| Anomaly detection data pipeline | Planned |
 
-This document describes the planned database design.
-
-The database schema and entities have not yet been implemented.
-
-Implementation decisions will be reviewed and tested before being
-considered complete.
+The implemented schema is defined by the SQLAlchemy models in `src/models/` and the Alembic migrations in `alembic/versions/`.
